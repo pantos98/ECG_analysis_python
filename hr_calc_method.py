@@ -47,7 +47,7 @@ class hrMethod():
                 self.num_samples = len(ecg)
                 self.ecg = np.array(ecg)
 
-            self.time = np.arange(1/self.fs, ceil(self.num_samples/self.fs), 1/self.fs)
+            self.time = np.arange(0, self.num_samples)/self.fs
 
         def filter_band_pass(self):
             """
@@ -154,7 +154,7 @@ class hrMethod():
             for i in range(0,NB_PEAKS):
                 if sign > 0:
                     maxloc[compt] = np.argmax(self.ecg[left[i]:right[i]+1])
-                    maxval[compt] = self.ecg[maxloc[compt]]
+                    maxval[compt] = self.ecg[int(maxloc[compt])]
                 else:
                     maxloc[compt] = np.argmin(self.ecg[left[i]:right[i]+1])
                     maxval[compt] = self.ecg[int(maxloc[compt])]
@@ -166,10 +166,9 @@ class hrMethod():
                         maxloc[compt] = -1
                         maxval[compt] = -10
                     elif (maxloc[compt] - maxloc[compt-1] < (self.fs * self.refPeriod)) and (abs(maxval[compt]) >= abs(maxval[compt-1])):
-                        maxloc[compt] = -1
-                        maxval[compt] = -10
-                    else:
-                        compt=compt+1
+                        maxloc[compt-1] = -1
+                        maxval[compt-1] = -10
+                    compt=compt+1
                 else:
                     compt=compt+1
 
@@ -186,11 +185,14 @@ class hrMethod():
             return self.qrs_pos, sign, en_thres
 
         def plotDebug(self):
-            fig, ax = plt.subplots(3, 1, figsize = (10,6), sharex=True, num = 0)
+            fig, ax = plt.subplots(3, 1, figsize = (30,6), sharex=True, num = 0)
             ax[0].plot(self.time, self.ecg, 'b', zorder = 0, label="raw ecg")
-            ax[0].plot(self.time, self.filt_ecg, 'r', zorder=5, label="filtered ecg")
+            #ax[0].plot(self.time, self.filt_ecg, 'r', zorder=5, label="filtered ecg")
+            #ax[0].legend()
 
             ax[1].plot(self.time,self.filt_ecg)
             ax[1].plot(self.R_t,self.R_amp, '+k')
 
             ax[2].plot(self.R_t[:len(self.hrv)], self.hrv, 'r+')
+            plt.show()
+            plt.close()
