@@ -160,7 +160,7 @@ class hrMethod():
                     maxval[compt] = self.ecg[int(maxloc[compt])]
                 maxloc[compt] = maxloc[compt] -1 + left[i] # add offset of present location
 
-            # Refractorz period --> improves results
+            # Refractory period --> improves results
                 if compt > 0:
                     if (maxloc[compt] - maxloc[compt-1] < (self.fs * self.refPeriod)) and (abs(maxval[compt]) < abs(maxval[compt-1])):
                         maxloc[compt] = -1
@@ -194,5 +194,6 @@ class hrMethod():
             ax[1].plot(self.R_t,self.R_amp, '+k')
 
             ax[2].plot(self.R_t[:len(self.hrv)], self.hrv, 'r+')
+            ax[2].set_ylim([0,200])
             plt.show()
             plt.close()
