@@ -149,38 +149,37 @@ class hrMethod():
             #Loop through all possibilities
             compt = 0
             NB_PEAKS = np.size(left)
-            maxval = np.zeros([NB_PEAKS])
-            maxloc = np.zeros([NB_PEAKS])
+            maxval = np.array([])
+            maxloc = np.array([])
             for i in range(0,NB_PEAKS):
                 if sign > 0:
-                    maxloc[compt] = np.argmax(self.ecg[left[i]:right[i]+1])
-                    maxval[compt] = self.ecg[int(maxloc[compt])]
+                    maxloc = np.append(maxloc, np.argmax(self.ecg[left[i]:right[i]+1]))
+                    maxval = np.append(maxval, self.ecg[int(maxloc[compt])])
                 else:
-                    maxloc[compt] = np.argmin(self.ecg[left[i]:right[i]+1])
-                    maxval[compt] = self.ecg[int(maxloc[compt])]
-                maxloc[compt] = maxloc[compt] -1 + left[i] # add offset of present location
+                    maxloc = np.append(maxloc, np.argmin(self.ecg[left[i]:right[i]+1]))
+                    maxval = np.append(maxval, self.ecg[int(maxloc[compt])])
+                maxloc[compt] = maxloc[compt] + left[i] # add offset of present location
 
             # Refractory period --> improves results
                 if compt > 0:
                     if (maxloc[compt] - maxloc[compt-1] < (self.fs * self.refPeriod)) and (abs(maxval[compt]) < abs(maxval[compt-1])):
-                        maxloc[compt] = -1
-                        maxval[compt] = -10
+                        maxloc = np.delete(maxloc,compt)
+                        maxval = np.delete(maxval,compt)
                     elif (maxloc[compt] - maxloc[compt-1] < (self.fs * self.refPeriod)) and (abs(maxval[compt]) >= abs(maxval[compt-1])):
-                        maxloc[compt-1] = -1
-                        maxval[compt-1] = -10
-                    compt=compt+1
+                        maxloc = np.delete(maxloc,compt-1)
+                        maxval = np.delete(maxval,compt-1)
+                    else:
+                        compt=compt+1
                 else:
                     compt=compt+1
 
-            idx = np.where(maxloc==-1)[0]
-            maxloc = np.delete(maxloc,idx)
-            maxval = np.delete(maxval,idx)
             self.qrs_pos = maxloc # datapoints qrs positions
             self.R_t = np.zeros([maxloc.size]) #timestamps QRS positions
             for i in range(0,maxloc.size):
                 self.R_t[i] = self.time[int(maxloc[i])] 
             self.R_amp = maxval # amplitude at QRS positions
             self.hrv = 60*np.ones([len(self.R_t)-1]) / (np.diff(self.R_t))
+            self.hrv = np.append([0],self.hrv)
 
             return self.qrs_pos, sign, en_thres
 
